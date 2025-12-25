@@ -223,6 +223,59 @@ const refreshAccessToken = asyncHandler(async(req,res)=>{
  }
 })
 
+const changeCurrentPassword = asyncHandler(async(req,res)=>{
+
+  const {oldPassword,newPassword} = req.body
+  
+
+ const User = await  user.findById(req.User._id)
+ 
+  const isPasswordCorrect = await User.isPasswordCorrect(oldPassword)
+
+  if (!isPasswordCorrect) {
+    throw new ApiError(400,"invalid old password ")
+  }
+
+  User.password = newPassword
+
+  await  User.save({validateBeforeSave : false })// why doing this 
+
+})
+
+const getCurrentUser = asyncHandler(async(req,res)=>{
+   
+
+})// to understant this in deep 
+
+const updateAccountDetail = asyncHandler(async(req,res)=>{
+
+  const {fullName,email} =  req.body
+
+   if (!fullName || !email) {
+        throw new ApiError(400, "All fields are required")
+    }
+
+
+
+  const User = await user.findByIdAndUpdate(req.User?._id,
+    {
+      $set : {
+        fullName : fullName,
+      email : email
+    }
+      
+    },
+    {
+      new : true 
+    }
+  ).select("-password") // why doing this select thing 
+
+  return res
+  .status(200)
+  .json(new ApiResponse(200,User,"updated successfully"))// why i am not passing fullname and user on the place of user
+
+})
+
    
 
 
@@ -230,6 +283,8 @@ export {
   registerUser,
   loginUser,
   logoutUser,
-  refreshAccessToken
+  refreshAccessToken,
+  changeCurrentPassword,
+  updateAccountDetail,
   
 }
